@@ -6,43 +6,41 @@
 #include "GameFramework/Actor.h"
 #include "Sceptor.generated.h"
 
-class UStaticMeshComponent;
+class USkeletalMeshComponent;
 
 UCLASS()
 class HORUSEUSDEMO_API ASceptor : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	ASceptor();
+public:
+    // Sets default values for this actor's properties
+    ASceptor();
+
+    class AMyCharacter* character;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
 
+    UPROPERTY(VisibleAnywhere)
+        class UBoxComponent* CollisionBox;
+
+    UPROPERTY(EditAnywhere)
+        bool canAttack;
+
+    UFUNCTION()
+        void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+    UFUNCTION()
+        void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 private:
-	UPROPERTY(VisibleAnywhere)
-		UStaticMeshComponent* WeaponMesh;
-
-	/*
-	UFUNCTION()
-		void OnOverlapBegin(
-			AActor* OverlappedActor, // this
-			AActor* OtherActor
-		);
-
-	UFUNCTION()
-		void OnOverlapEnd(
-			AActor* OverlappedActor, // this
-			AActor* OtherActor
-		);
-
-	*/
+    UPROPERTY(EditAnywhere)
+        USkeletalMeshComponent* weaponMesh;
 
 
 };

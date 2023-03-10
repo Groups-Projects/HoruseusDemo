@@ -20,6 +20,8 @@ public:
 	// Sets default values for this character's properties
 	AMyCharacter();
 
+
+
 	//UPROPERTY(Edit)
 	ASceptor* ScWeapon;
 
@@ -27,7 +29,7 @@ public:
 	void MoveStrafe(float Axis);
 	void Turn(float Axis);
 	void LookUp(float Axis);
-	void Fire();
+	//void Fire();
 
 	
 
@@ -44,14 +46,25 @@ private:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ASceptor> ScWeaponClass;
 
-	UPROPERTY(EditAnywhere)
+UPROPERTY(EditAnywhere)
 		UAnimMontage* AttackMontage;
+	
 		
 
 
 	UPROPERTY(VisibleAnywhere)
 		UCameraComponent* Camera;
 
-	UPROPERTY(VisibleAnywhere)
-		float Health = 100.0f;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
+public:
+	UPROPERTY(EditAnywhere)
+		bool canMove;
+
+	UPROPERTY(EditAnywhere)
+		float health;
+
+	void Attack();
+
+
 };

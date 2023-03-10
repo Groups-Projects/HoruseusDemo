@@ -53,7 +53,7 @@ void ACustomPlayerController::CallLookUp(float Value)
 void ACustomPlayerController::CallFire()
 {
 	if (Player) {
-		Player->Fire();
+		Player->Attack();
 	}
 }
 
