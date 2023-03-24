@@ -29,11 +29,8 @@ public:
 	void MoveStrafe(float Axis);
 	void Turn(float Axis);
 	void LookUp(float Axis);
-	void Attack_1();
-	void Attack_2();
-	void GeneralMontageTimerHandleRanOut();
-	
 	//void Fire();
+
 	
 
 protected:
@@ -43,15 +40,6 @@ protected:
 
 private:
 
-
-	UPROPERTY(EditAnywhere)
-		int iComboState;
-
-	FTimerHandle GeneralMontageTimerHandle;
-
-	UPROPERTY(EditAnywhere)
-		int GeneralMontageTimerValue = 20.0f;
-
 	UPROPERTY(VisibleAnywhere)
 		USpringArmComponent* SpringArm;
 
@@ -60,9 +48,6 @@ private:
 
 UPROPERTY(EditAnywhere)
 		UAnimMontage* AttackMontage;
-
-UPROPERTY(EditAnywhere)
-        UAnimMontage* AttackMontage_2;
 	
 		
 
