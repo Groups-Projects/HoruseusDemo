@@ -92,7 +92,7 @@ void AMyCharacter::Attack()
 			if (!animInstance->Montage_IsPlaying(AttackMontage))
 			{
 				animInstance->Montage_Play(AttackMontage, 1.0f);
-				ScWeapon->canAttack = true;
+					ScWeapon->canAttack = true;
 			}
 
 		}
