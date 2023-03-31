@@ -4,4 +4,5 @@ DerivedDataCache/
 Intermediate/
 *.sln
 Saved/Logs/*
+Saved/Config/CrashReportClient/*
 .git_old_bad/*
