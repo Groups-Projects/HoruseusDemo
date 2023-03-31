@@ -5,8 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "CustomPlayerController.generated.h"
-
+class UUserWidget;
 class AMyCharacter;
+class AMyCharacter;
+
+
 UCLASS()
 class HORUSEUSDEMO_API ACustomPlayerController : public APlayerController
 {
@@ -24,6 +27,17 @@ public:
 	virtual void CallLookUp(float Value);
 	virtual void CallFire();
 	virtual void CallJump();
+
+	virtual void CallSprint();
+	virtual void CallStopSprinting();
+
 	AMyCharacter* Player;
+
+private:
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<UUserWidget> ClassHUD;
+
+	UUserWidget* HUD;
+
 
 };

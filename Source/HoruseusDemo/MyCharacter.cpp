@@ -6,6 +6,11 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
+#include "DrawDebugHelpers.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -22,6 +27,17 @@ AMyCharacter::AMyCharacter()
 	Camera->SetupAttachment(SpringArm);
 
 	
+	//created a spring arm for the minimap that is connected to the root component.
+	MiniMapArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Mini Map Arm"));
+	MiniMapArm->SetupAttachment(RootComponent);
+	MiniMapArm->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
+
+	//Created a minimap camera that connects to the minimap spring arm.
+	MiniMapCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Mini Map Camera"));
+	MiniMapCamera->SetupAttachment(MiniMapArm);
+
+
+
 	canMove = true;
 	health = 100.0f;
 	iComboState = 0;
@@ -39,6 +55,10 @@ void AMyCharacter::BeginPlay()
 		ScWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("Scepter"));
 		ScWeapon->SetOwner(this);
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(LowerStamina, this, &AMyCharacter::HandleSprinting, 1.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(RegenerateStamina, this, &AMyCharacter::RefillStamina, 5.0f, true); 
+
 }
 
 
@@ -59,14 +79,14 @@ void AMyCharacter::MoveStrafe(float Axis)
 void AMyCharacter::Turn(float Axis)
 {
 	if (health >= 0.0f) {
-		AddControllerYawInput(Axis);
+		AddControllerYawInput(Axis * TurnRate * GetWorld()->GetDeltaSeconds());
 	}
 }
 
 void AMyCharacter::LookUp(float Axis)
 {
 	if (health >= 0.0f) {
-		AddControllerPitchInput(Axis);
+		AddControllerPitchInput(Axis * LookupRate * GetWorld()->GetDeltaSeconds());
 	}
 }
 
@@ -201,3 +221,81 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+float AMyCharacter::ReturnStamina()
+{
+	return Stamina;
+}
+
+void AMyCharacter::Sprint()
+{
+	if (Stamina > 0)
+	{
+		bPlayerIsSprinting = true;
+		GetCharacterMovement()->MaxWalkSpeed = 900.0f;
+	}
+	else
+	{
+		StopSprinting();
+	}
+}
+
+void AMyCharacter::StopSprinting()
+{
+	bPlayerIsSprinting = false;
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+}
+
+void AMyCharacter::RefillStamina()
+{
+	if (!bPlayerIsSprinting)
+	{
+		if (Stamina < 100) {
+			if (Stamina + 1.0f < 100.f)
+			{
+				Stamina = Stamina + 10.0f;
+			}
+			else
+			{
+				Stamina = 100.f;
+			}
+			UE_LOG(LogTemp, Warning, TEXT("PlayerStamina : %f"), Stamina);
+		}
+	}
+}
+
+void AMyCharacter::HandleSprinting()
+{
+	if (bPlayerIsSprinting)
+	{
+		if (Stamina - 10.f > 0)
+		{
+			Stamina -= 10.f;
+		}
+		else
+		{
+			Stamina = 0;
+			bPlayerIsSprinting = false;
+			StopSprinting();
+		}
+		UE_LOG(LogTemp, Warning, TEXT("PlayerStamina : %f"), Stamina);
+	}
+}
+
+
+
+float AMyCharacter::ReturnHealth()
+{
+	return health;
+}

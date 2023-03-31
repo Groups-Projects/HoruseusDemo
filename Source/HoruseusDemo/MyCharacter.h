@@ -10,6 +10,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class ASceptor;
 class UAnimMontage;
+class USceneCaptureComponent2D;
+
 
 UCLASS()
 class HORUSEUSDEMO_API AMyCharacter : public ACharacter
@@ -36,6 +38,12 @@ public:
 	//void Fire();
 	
 
+	UFUNCTION(BlueprintPure)
+		float ReturnStamina();
+
+	UFUNCTION(BlueprintPure)
+		float ReturnHealth();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -52,8 +60,26 @@ private:
 	UPROPERTY(EditAnywhere)
 		int GeneralMontageTimerValue = 20.0f;
 
+	UPROPERTY(EditAnywhere)
+		float TurnRate = 45.0f;
+
+	UPROPERTY(EditAnywhere)
+		float LookupRate = 45.0f;
+
+
 	UPROPERTY(VisibleAnywhere)
 		USpringArmComponent* SpringArm;
+
+
+	//Creating a USpringArmComponent for the mini map camera.
+	UPROPERTY(EditAnywhere)
+		USpringArmComponent* MiniMapArm;
+
+	//Creating a USceneCaptureComponent2D to create a mini map camera.
+	UPROPERTY(EditAnywhere)
+		USceneCaptureComponent2D* MiniMapCamera;
+
+
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ASceptor> ScWeaponClass;
@@ -72,7 +98,27 @@ UPROPERTY(EditAnywhere)
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
+
+
+
+
 public:
+	void Sprint();
+	void StopSprinting();
+	void RefillStamina();
+	void HandleSprinting();
+
+	FTimerHandle RegenerateStamina;
+	FTimerHandle LowerStamina;
+
+	UPROPERTY(EditAnywhere)
+		float Stamina = 100.f;
+
+	UPROPERTY()
+		bool bPlayerIsSprinting = false;
+
+
+
 	UPROPERTY(EditAnywhere)
 		bool canMove;
 

@@ -3,11 +3,20 @@
 
 #include "CustomPlayerController.h"
 #include "MyCharacter.h"
+#include "Blueprint/UserWidget.h"
 
 void ACustomPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	Player = Cast<AMyCharacter>(GetPawn());
+
+	HUD = CreateWidget(this, ClassHUD);
+	if (HUD != nullptr)
+	{
+		HUD->AddToViewport();
+	}
+
+	
 }
 
 void ACustomPlayerController::SetupInputComponent()
@@ -20,6 +29,9 @@ void ACustomPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("LookUp", this, &ACustomPlayerController::CallLookUp);
 	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &ACustomPlayerController::CallFire);
 	InputComponent->BindAction("Jumping", EInputEvent::IE_Pressed, this, &ACustomPlayerController::CallJump);
+	InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &ACustomPlayerController::CallSprint);
+	InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &ACustomPlayerController::CallStopSprinting);
+
 }
 
 void ACustomPlayerController::CallForward(float Value)
@@ -64,3 +76,21 @@ void ACustomPlayerController::CallJump()
 	}
 }
 
+
+
+
+
+void ACustomPlayerController::CallSprint()
+{
+	if (Player) {
+		Player->Sprint();
+	}
+}
+
+
+void ACustomPlayerController::CallStopSprinting()
+{
+	if (Player) {
+		Player->StopSprinting();
+	}
+}

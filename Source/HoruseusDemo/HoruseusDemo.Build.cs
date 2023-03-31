@@ -7,8 +7,8 @@ public class HoruseusDemo : ModuleRules
 	public HoruseusDemo(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "GameplayTasks", "NavigationSystem", "AIModule" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
