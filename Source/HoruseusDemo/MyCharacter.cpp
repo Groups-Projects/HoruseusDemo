@@ -195,18 +195,22 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	{
 		if (health - DamageAmount > 0)
 		{
+			// am alive
 			health -= DamageAmount;
 			UE_LOG(LogTemp, Warning, TEXT("Taking Damage.Remaining Health:%f"), health);
 
 			if (animInstance && GetHitMontage)
 			{
+				// can show montage
 				animInstance->Montage_Play(GetHitMontage, 1.0f);
 			}
+			// bleed
 			GetWorld()->SpawnActor<AParticle>(ParticleClass, this->GetActorLocation(), this->GetActorRotation());
 		}
 
 		else
 		{
+			// about to die
 			UE_LOG(LogTemp, Warning, TEXT("DEAD"));
 			canMove = false;
 
@@ -215,6 +219,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 				animInstance->Montage_Play(DyingMontage, 1.0f);
 			}
 
+			// call appropriate functions, destroy actor, proceed to gameover screen
 			FTimerHandle timer;
 			GetWorldTimerManager().SetTimer(timer, this, &AMyCharacter::ActorDestroy, 10.0f, false);
 			if (IsPlayerControlled())
