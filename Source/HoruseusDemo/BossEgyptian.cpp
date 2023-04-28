@@ -4,6 +4,7 @@
 #include "BossEgyptian.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particle.h"
+#include "HoruseusDemoGameModeBase.h"
 
 // Sets default values
 ABossEgyptian::ABossEgyptian()
@@ -17,6 +18,9 @@ ABossEgyptian::ABossEgyptian()
 void ABossEgyptian::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// remember gamemode for future use
+	CustomGameModeBase = Cast<AHoruseusDemoGameModeBase>( UGameplayStatics::GetGameMode(GetWorld()) );
 	
 	// player/ai controllers appear only upon begin play - not
 	// in the constructor
@@ -75,6 +79,10 @@ float ABossEgyptian::TakeDamage( float DamageAmount, const FDamageEvent &DamageE
 		
 		UE_LOG( LogTemp, Warning, TEXT("ABossEgyptian::TakeDamage final attack, dead") );
 		
+		if (CustomGameModeBase) {
+			CustomGameModeBase->WonGame(true);
+		}
+
 		// show animation
 		/*if( CustomAnimInstance && MontageDeath ) {
 		

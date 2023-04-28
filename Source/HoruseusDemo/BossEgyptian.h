@@ -33,6 +33,8 @@ public:
 
 
 private:
+	
+	AHoruseusDemoGameModeBase* CustomGameModeBase;
 
 	// reused code from CO2301 assignment 1
 
