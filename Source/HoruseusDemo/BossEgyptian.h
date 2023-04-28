@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "BossEgyptianController.h"
 #include "BossEgyptianAnimInstance.h"
+#include "HoruseusDemoGameModeBase.h" // found and fixed by andreas
 #include "BossEgyptian.generated.h"
 
 class UAnimMontage;
