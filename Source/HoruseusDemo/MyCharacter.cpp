@@ -2,6 +2,7 @@
 
 
 #include "MyCharacter.h"
+#include "HoruseusDemoGameModeBase.h"
 #include "Sceptor.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -9,8 +10,11 @@
 #include "DrawDebugHelpers.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "GameFramework/Pawn.h"
+#include "HealthPickUpActor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "EnemyAIController.h"
+#include "Particle.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -26,7 +30,6 @@ AMyCharacter::AMyCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	
 	//created a spring arm for the minimap that is connected to the root component.
 	MiniMapArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Mini Map Arm"));
 	MiniMapArm->SetupAttachment(RootComponent);
@@ -36,18 +39,15 @@ AMyCharacter::AMyCharacter()
 	MiniMapCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Mini Map Camera"));
 	MiniMapCamera->SetupAttachment(MiniMapArm);
 
-
-
 	canMove = true;
 	health = 100.0f;
 	iComboState = 0;
-	 
+	IsInAttack = false;
 }
+
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//ScWeapon = Cast<ASceptor>(GetOwner());
 
 	if (ScWeaponClass)
 	{
@@ -56,187 +56,182 @@ void AMyCharacter::BeginPlay()
 		ScWeapon->SetOwner(this);
 	}
 
+	ScWeapon->SetActorRelativeLocation(FVector(.0f, 0.0f, -10.0f));
+	ScWeapon->SetActorRelativeRotation(FRotator(0.0f, 100.0f, 0.0f));
+
 	GetWorld()->GetTimerManager().SetTimer(LowerStamina, this, &AMyCharacter::HandleSprinting, 1.0f, true);
-	GetWorld()->GetTimerManager().SetTimer(RegenerateStamina, this, &AMyCharacter::RefillStamina, 5.0f, true); 
-
+	GetWorld()->GetTimerManager().SetTimer(RegenerateStamina, this, &AMyCharacter::RefillStamina, 5.0f, true);
 }
-
 
 void AMyCharacter::MoveForward(float Axis)
 {
-	if (health >= 0.0f) {
+	if (health >= 0.0f && canMove) 
+	{
 		AddMovementInput(GetActorForwardVector() * Axis);
 	}
 }
 
 void AMyCharacter::MoveStrafe(float Axis)
 {
-	if (health >= 0.0f) {
+	if (health >= 0.0f && canMove) 
+	{
 		AddMovementInput(GetActorRightVector() * Axis);
 	}
 }
 
 void AMyCharacter::Turn(float Axis)
 {
-	if (health >= 0.0f) {
+	if (health >= 0.0f && canMove) 
+	{
 		AddControllerYawInput(Axis * TurnRate * GetWorld()->GetDeltaSeconds());
 	}
 }
 
 void AMyCharacter::LookUp(float Axis)
 {
-	if (health >= 0.0f) {
+	if (health >= 0.0f && canMove) 
+	{
 		AddControllerPitchInput(Axis * LookupRate * GetWorld()->GetDeltaSeconds());
 	}
 }
 
-void AMyCharacter::GeneralMontageTimerHandleRanOut() {
-
-	// I end up here when I wait too long after
-	// attacking, so my combo breaks
-	// and the character goes back to the idle state.
-
-	// become idle
-	iComboState = 0;
-
-	// invalidate timer
-	// so it can be set again
-	GeneralMontageTimerHandle.Invalidate();
-
-}
-
-void AMyCharacter::Attack_1()
+void AMyCharacter::ActorDestroy()
 {
-	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-
-	// make sure i have animation montage to show
-	if( !(animInstance && AttackMontage) )
-	{
-		// no montage, nothing to do
-		return;
-	}
-
-	if (!animInstance->Montage_IsPlaying(AttackMontage))
-	{
-		// montage was not playling
-
-		// perform an attack
-		animInstance->Montage_Play(AttackMontage, 1.0f);
-		ScWeapon->canAttack = true;
-
-		// set combo state
-		iComboState = 1;
-
-		// start combo breaker timer
-		GetWorldTimerManager().SetTimer(GeneralMontageTimerHandle, this, &AMyCharacter::GeneralMontageTimerHandleRanOut, GeneralMontageTimerValue, true, 2.0f);
-			
-	}
+	Destroy();
+	ScWeapon->Destroy();
 }
 
-void AMyCharacter::Attack_2()
+void AMyCharacter::HealthPickup()
 {
-	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-
-	if (animInstance && AttackMontage_2)
-	{
-
-		if (!animInstance->Montage_IsPlaying(AttackMontage_2))
-		{
-			// perform an attack
-			animInstance->Montage_Play(AttackMontage_2, 1.0f);
-			ScWeapon->canAttack = true;
-			
-			// set combo state
-			iComboState = 2;
-
-			// start combo breaker timer
-			GetWorldTimerManager().SetTimer(GeneralMontageTimerHandle, this, &AMyCharacter::GeneralMontageTimerHandleRanOut, GeneralMontageTimerValue, true, 2.0f);
-
-		}
-
-	}
+	health += 10.0f;
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), CrystalPickUpSound, GetOwner()->GetActorLocation(), 1.0f, 1.0f, 0.0f);
+	GEngine->AddOnScreenDebugMessage(-10, 1.0f, FColor::Yellow, "+10 Health");
 }
-
-
 
 void AMyCharacter::Attack()
 {
 
-	int state_idle = 0;
-	int state_atk1 = 1;
-	int state_atk2 = 2;
-
 	if (canMove)
 	{
+		UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 
-		if ( !GeneralMontageTimerHandle.IsValid() )
-			// im not in a combo chain
-			// because combo timer is invalid
+		if (canMove && !animInstance->Montage_IsPlaying(NULL)) // check if can move and no montage is playing
 		{
 
-			// so i want to perform first attack
-			Attack_1();
-			return;
+			switch (AttackNum)
+			{
+			case 0:
+				if (animInstance && AttackMontage)
+				{
+					if (!animInstance->Montage_IsPlaying(AttackMontage))
+					{
+						animInstance->Montage_Play(AttackMontage, 1.0f);
+						IsInAttack = true;
+						ScWeapon->CanAttack = true;
+						AttackNum++;
+						GetWorldTimerManager().SetTimer(GeneralMontageTimerHandle, this, &AMyCharacter::Attack_End, GeneralMontageTimerValue, false);
+						break;
+					}
+
+				}
+			case 1:
+				if (animInstance && AttackMontage_2)
+				{
+					if (!animInstance->Montage_IsPlaying(AttackMontage_2))
+					{
+						animInstance->Montage_Play(AttackMontage_2, 1.0f);
+						IsInAttack = true;
+						ScWeapon->CanAttack = true;
+						AttackNum++;
+						GetWorldTimerManager().SetTimer(GeneralMontageTimerHandle, this, &AMyCharacter::Attack_End, GeneralMontageTimerValue, false);
+						break;
+					}
+				}
+			case 2:
+				if (animInstance && AttackMontage_3)
+				{
+					if (!animInstance->Montage_IsPlaying(AttackMontage_3))
+					{
+						animInstance->Montage_Play(AttackMontage_3, 1.0f);
+						IsInAttack = true;
+						ScWeapon->CanAttack = true;
+						AttackNum++;
+						GetWorldTimerManager().SetTimer(GeneralMontageTimerHandle, this, &AMyCharacter::Attack_End, GeneralMontageTimerValue, false);
+						break;
+					}
+				}
+			case 3:
+				if (animInstance && AttackMontage)
+				{
+					if (!animInstance->Montage_IsPlaying(AttackMontage))
+					{
+						animInstance->Montage_Play(AttackMontage, 1.0f);
+						IsInAttack = true;
+						ScWeapon->CanAttack = true;
+						AttackNum++;
+						GetWorldTimerManager().SetTimer(GeneralMontageTimerHandle, this, &AMyCharacter::Attack_End, GeneralMontageTimerValue, false);
+						break;
+					}
+
+				}
+			default:
+				AttackNum = 0;
+
+			}
+
 		}
-
-		// i end up here only if im in a combo
-
-		if (iComboState == state_idle) 
-		{
-			Attack_1();
-				
-
-		}
-		else if (iComboState == state_atk1) 
-		{
-
-
-		}
-		else if (iComboState == state_atk2) {
-
-
-		}
-		else {
-		}
-
-		
 	}
 }
 
+void AMyCharacter::Attack_End()
+{
+	IsInAttack = false;
+}
 
 float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-
-	health -= DamageAmount;
-	UE_LOG(LogTemp, Warning, TEXT("Taking Damage"));
-
-	if (health <= 0.0f)
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (canMove)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DEAD"));
-		Destroy();
-		ScWeapon->Destroy();
-	}
+		if (health - DamageAmount > 0)
+		{
+			health -= DamageAmount;
+			UE_LOG(LogTemp, Warning, TEXT("Taking Damage.Remaining Health:%f"), health);
 
+			if (animInstance && GetHitMontage)
+			{
+				animInstance->Montage_Play(GetHitMontage, 1.0f);
+			}
+			GetWorld()->SpawnActor<AParticle>(ParticleClass, this->GetActorLocation(), this->GetActorRotation());
+		}
+
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DEAD"));
+			canMove = false;
+
+			if (animInstance && DyingMontage)
+			{
+				animInstance->Montage_Play(DyingMontage, 1.0f);
+			}
+
+			FTimerHandle timer;
+			GetWorldTimerManager().SetTimer(timer, this, &AMyCharacter::ActorDestroy, 10.0f, false);
+			if (IsPlayerControlled())
+			{
+				Cast<AHoruseusDemoGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()))->GameOver(true);
+			}
+			else
+			{
+				Cast<AHoruseusDemoGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()))->EnemyDestroyed();
+			}
+			DetachFromControllerPendingDestroy();
+		}
+
+	}
 	return DamageAmount;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-float AMyCharacter::ReturnStamina()
-{
-	return Stamina;
-}
 
 void AMyCharacter::Sprint()
 {
@@ -293,9 +288,22 @@ void AMyCharacter::HandleSprinting()
 	}
 }
 
+void AMyCharacter::Crouching()
+{
+	PlayerCanCrouch = true;
+}
 
+void AMyCharacter::StopCrouching()
+{
+	PlayerCanCrouch = false;
+}
 
 float AMyCharacter::ReturnHealth()
 {
 	return health;
+}
+
+float AMyCharacter::ReturnStamina()
+{
+	return Stamina;
 }

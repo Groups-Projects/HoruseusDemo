@@ -3,6 +3,7 @@
 
 #include "BossEgyptian.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particle.h"
 
 // Sets default values
 ABossEgyptian::ABossEgyptian()
@@ -63,7 +64,7 @@ void ABossEgyptian::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 float ABossEgyptian::TakeDamage( float DamageAmount, const FDamageEvent &DamageEvent, AController *EventInstigator, AActor *DamageCauser ) {
 	
-	//UE_LOG( LogTemp, Warning, TEXT("ABossEgyptian::TakeDamage") );
+	UE_LOG( LogTemp, Warning, TEXT("ABossEgyptian::TakeDamage") );
 
 	// apply the damage
 	StatsBaseHP -= DamageAmount;
@@ -98,13 +99,11 @@ float ABossEgyptian::TakeDamage( float DamageAmount, const FDamageEvent &DamageE
 		UE_LOG( LogTemp, Warning, TEXT("ABossEgyptian::TakeDamage remaining health %f"), StatsBaseHP );
 
 		// show animation
-		if( CustomAnimInstance ) {
-			//CustomAnimInstance->TakeHitLight();
-			CustomAnimInstance->PlayIdle();
+		if( CustomAnimInstance ) 
+		{
+			CustomAnimInstance->TakeHitLight();
 		}
-		/*if( CustomAnimInstance && MontageHitTaken ) {
-			CustomAnimInstance->Montage_Play( MontageHitTaken, 1.0f );
-		}*/
+		GetWorld()->SpawnActor<AParticle>(ParticleClass, this->GetActorLocation(), this->GetActorRotation());
 	
 	} // else final attack..
 
@@ -130,6 +129,12 @@ void ABossEgyptian::OnMontageHitTakenEnd(
 		) {
 		
 	UE_LOG( LogTemp, Warning, TEXT("ABossEgyptian::PlayMontageNotifyEnd") );
+
+}
+
+int ABossEgyptian::GetCurrentCustomState() {
+
+    return CurrentCustomState;
 
 }
 

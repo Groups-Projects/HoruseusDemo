@@ -16,8 +16,12 @@ class HORUSEUSDEMO_API ASceptor : public AActor
 public:
     // Sets default values for this actor's properties
     ASceptor();
-
+    class AEnemyAIController* EnemyPlayer;
     class AMyCharacter* character;
+   // class EnemyAIController* EnemyControllerRef;
+
+    UPROPERTY(EditAnywhere)
+        bool CanAttack;
 
 protected:
     // Called when the game starts or when spawned
@@ -29,9 +33,6 @@ public:
 
     UPROPERTY(VisibleAnywhere)
         class UBoxComponent* CollisionBox;
-
-    UPROPERTY(EditAnywhere)
-        bool canAttack;
 
     UFUNCTION()
         void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

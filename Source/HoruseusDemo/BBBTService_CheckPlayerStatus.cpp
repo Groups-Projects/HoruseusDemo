@@ -74,6 +74,19 @@ void UBBBTService_CheckPlayerStatus::TickNode( UBehaviorTreeComponent& OwnerComp
         return;
         }
 
+    // remember starting location only once
+    if( !SelfBlackboardComp->IsVectorValueSet( TEXT("StartingPoint") ) ) {
+        SelfBlackboardComp->SetValueAsVector( TEXT("StartingPoint"), SelfPawn->GetActorLocation() );
+    }
+
+    if( !LivePawn ) {
+        // player pawn does not exist, possibly destroyed
+        // because player died
+        // nothing to do
+        SelfBlackboardComp->SetValueAsBool( TEXT("PlayerDied"), true );
+        return;
+    }
+
     // make sure i can see player unobstructed
     bool bIHaveLineOfSight = SelfController->LineOfSightTo( LivePawn );
     bool bPlayerIsInFrontOfMe = PlayerIsInFrontOfMe( SelfPawn, LivePawn );
@@ -94,7 +107,13 @@ void UBBBTService_CheckPlayerStatus::TickNode( UBehaviorTreeComponent& OwnerComp
         // as long as it is set, behaviour tree will act
         // the same
         // so i have to clear it
-        SelfBlackboardComp->ClearValue( TEXT("CanSeePlayer") );
+        //SelfBlackboardComp->ClearValue( TEXT("CanSeePlayer") );
+        
+        // this is no longer the case
+        // i need true and faluse values
+
+        SelfBlackboardComp->SetValueAsBool( TEXT("CanSeePlayer"), false );
+
         return;
 
     }
@@ -102,6 +121,8 @@ void UBBBTService_CheckPlayerStatus::TickNode( UBehaviorTreeComponent& OwnerComp
     // i can clearly see the player
 
     SelfBlackboardComp->SetValueAsBool( TEXT("CanSeePlayer"), true );
-    //SelfBlackboardComp->SetValueAsVector( TEXT("LastPlayerLocation"), LivePawn->GetActorLocation() );
+
+    // remember several things about him
+    SelfBlackboardComp->SetValueAsVector( TEXT("LastPlayerLocation"), LivePawn->GetActorLocation() );
     
 }

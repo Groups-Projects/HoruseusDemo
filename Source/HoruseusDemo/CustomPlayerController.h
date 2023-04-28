@@ -27,9 +27,11 @@ public:
 	virtual void CallLookUp(float Value);
 	virtual void CallFire();
 	virtual void CallJump();
-
 	virtual void CallSprint();
 	virtual void CallStopSprinting();
+	virtual void CallCrouching();
+	virtual void CallStopCrouching();
+	virtual void PauseGame();
 
 	AMyCharacter* Player;
 
@@ -37,7 +39,12 @@ private:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UUserWidget> ClassHUD;
 
-	UUserWidget* HUD;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<UUserWidget> PauseMenuHUDClass;
 
+	UPROPERTY()
+		UUserWidget* HUD;
 
+	UPROPERTY()
+		UUserWidget* PauseWidget;
 };

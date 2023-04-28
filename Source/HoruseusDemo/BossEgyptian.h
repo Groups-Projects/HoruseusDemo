@@ -10,7 +10,7 @@
 
 class UAnimMontage;
 class UAnimBlueprint;
-
+class AParticle;
 UCLASS()
 class HORUSEUSDEMO_API ABossEgyptian : public ACharacter
 {
@@ -68,9 +68,13 @@ private:
 	// help:
 	// https://en.cppreference.com/w/cpp/language/nested_types
 	struct CustomStates {
-		const static int IdleImmune = 0;
-		const static int BeganFighting = 1;
+		const static int Idle = 0;
+		const static int InFight = 1;
+		const static int Boxing = 2;
 	};
+	
+	UPROPERTY( VisibleAnywhere )
+		int CurrentCustomState = CustomStates::Idle;
 		
 	UPROPERTY( EditAnywhere )
 		USoundBase *SoundAttackLight = nullptr;
@@ -84,8 +88,13 @@ private:
 		USoundBase *SoundDeath = nullptr;
 	UPROPERTY( EditAnywhere )
 		USoundBase *SoundKilledSomeone = nullptr;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AParticle> ParticleClass;
 
 public:
+
+	UFUNCTION( BlueprintCallable )
+		int GetCurrentCustomState();
 
 	UFUNCTION( BlueprintCallable )
 		float GetStatsHP();

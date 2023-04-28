@@ -16,20 +16,22 @@ class HORUSEUSDEMO_API UBossEgyptianAnimInstance : public UAnimInstance
 
 private:
 
+	FName NextComboSectionLight;
+	FName NextComboSectionHeavy;
+
 	UPROPERTY(EditAnywhere)
 		UAnimMontage* MontageIdle;
+		
 	UPROPERTY(EditAnywhere)
-		UAnimMontage* MontageAttackLight;
+		UAnimMontage* MontageHitLight;
 	UPROPERTY(EditAnywhere)
-		UAnimMontage* MontageAttackHeavy;
+		UAnimMontage* MontageHitStunned;
+		
 	UPROPERTY(EditAnywhere)
-		UAnimMontage* MontageTaunt;
-	UPROPERTY(EditAnywhere)
-		UAnimMontage* MontageHitTaken;
-	UPROPERTY(EditAnywhere)
-		UAnimMontage* MontageDeath;
-	UPROPERTY(EditAnywhere)
-		UAnimMontage* MontageKilledSomeone;
+		UAnimMontage* MontageBoxing;
+		
+	//void ComboCooldownTimerRanOut();
+	//FTimerHandle ComboCooldownTimerHandle;
 
 public:
 
@@ -37,9 +39,28 @@ public:
 		void PlayIdle();
 		
 	UFUNCTION( BlueprintCallable )
-		void BeginFight();
+		void BreakCombo();
+	UFUNCTION( BlueprintCallable )
+		void SetNextComboSection( FName Light, FName Heavy );
+	UFUNCTION( BlueprintCallable )
+		FName GetNextComboSection( int ComboType );
 
+	// i call this via blueprint beh tree task
+	/*
+	UFUNCTION( BlueprintCallable )
+		void PoseSit();
+		*/
+	/*
+	UFUNCTION( BlueprintCallable )
+		void StandUpFromChair();
+		*/
+		
 	UFUNCTION( BlueprintCallable )
 		void TakeHitLight();
+		
+	/*
+	UFUNCTION( BlueprintCallable )
+		void PlayLightAttackCombo();
+		*/
 	
 };
