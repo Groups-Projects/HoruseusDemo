@@ -16,6 +16,26 @@ class HORUSEUSDEMO_API UBossEgyptianAnimInstance : public UAnimInstance
 
 private:
 
+	UPROPERTY()
+		FVector OwnerVelocityVector;
+	UPROPERTY()
+		FTransform OwnerTransform;
+
+public:
+
+	// i set it via NativeBeginPlay()
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly )
+		ACharacter *OwnerChara;
+
+	// i set it via UpdateVariables()
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly )
+		float OwnerVelocity = 0.0f;
+	// i set it via UpdateVariables()
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly )
+		float OwnerAngle = 0.0f;
+
+private:
+
 	FName NextComboSectionLight;
 	FName NextComboSectionHeavy;
 
@@ -62,5 +82,15 @@ public:
 	UFUNCTION( BlueprintCallable )
 		void PlayLightAttackCombo();
 		*/
+
+public:
+
+	UFUNCTION( BlueprintCallable )
+		void UpdateVariables();
+
+private:
+
+	UFUNCTION()
+		void NativeBeginPlay() override;
 	
 };

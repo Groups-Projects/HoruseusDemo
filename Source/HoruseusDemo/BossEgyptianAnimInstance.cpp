@@ -1,7 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+// header
 #include "BossEgyptianAnimInstance.h"
+// default
+#include "GameFramework/Character.h"
+#include "Kismet/KismetMathLibrary.h"
+// custom
 
 void UBossEgyptianAnimInstance::TakeHitLight() {
 
@@ -180,3 +184,42 @@ void UBossEgyptianAnimInstance::StandUpFromChair() {
 	//UE_LOG( LogTemp, Warning, TEXT("UBossEgyptianAnimInstance::BeginFight finished") );
 
 }//*/
+
+void UBossEgyptianAnimInstance::NativeBeginPlay() {
+
+    // attempt to populate private variable
+    OwnerChara = Cast<ACharacter>( TryGetPawnOwner() );
+
+}
+
+void UBossEgyptianAnimInstance::UpdateVariables() {
+
+    // help:
+    // https://www.youtube.com/watch?v=kbrTNqG1Uh8&list=PLlswSOADCx3dZuEIYN7dxAwYSKIwNIIC-&t=1325
+    // CO2301 Session 10
+
+    if( !OwnerChara ) {
+        // no character,
+        // reset all public variables
+        
+        OwnerVelocity = 0.0f;
+        OwnerAngle = 0.0f;
+
+        return;
+    }
+
+    // get necessary vectors
+    OwnerVelocityVector = OwnerChara->GetVelocity();
+    OwnerTransform = OwnerChara->GetActorTransform();
+
+    // calculate necessary public variables
+
+    OwnerVelocity = OwnerVelocityVector.Size();
+
+    // help:
+    // "Kismet/KismetMathLibrary.h" function InverseTransformDirection
+    // https://forums.unrealengine.com/t/get-rotation-from-xvector-c/320487/4
+    FVector InversedOwnerTransformDirection = OwnerTransform.InverseTransformVectorNoScale( OwnerVelocityVector );
+    OwnerAngle = UKismetMathLibrary::MakeRotFromX( InversedOwnerTransformDirection ).Yaw;
+
+}
